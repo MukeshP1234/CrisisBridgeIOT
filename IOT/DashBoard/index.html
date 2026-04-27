@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CrisisBridge — Real-time Multi-Risk Safety & Incident Intelligence Dashboard" />
+  <title>CrisisBridge — Safety Intelligence Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <!-- chartjs-plugin-annotation (optional for threshold lines) -->
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header id="main-header">
+    <div class="header-left">
+      <div class="logo-icon" id="logo-pulse">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <h1>CrisisBridge</h1>
+        <p class="subtitle">Multi-Risk Safety & Incident Intelligence</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="connection-status" id="connection-status">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting…</span>
+      </div>
+      <div class="last-update" id="last-update">—</div>
+    </div>
+  </header>
+
+  <!-- ═══════════ MAIN LAYOUT ═══════════ -->
+  <div class="app-layout">
+
+    <!-- ── SIDE PANEL ── -->
+    <aside id="side-panel">
+      <div class="side-section">
+        <h3>System State</h3>
+        <div class="state-indicator" id="state-indicator">
+          <div class="state-glow" id="state-glow"></div>
+          <span class="state-label" id="state-label">—</span>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <h3>Risk Gauge</h3>
+        <div class="gauge-container">
+          <canvas id="riskGauge" width="200" height="130"></canvas>
+          <div class="gauge-value" id="gauge-value">0</div>
+          <div class="gauge-label">RISK SCORE</div>
+        </div>
+      </div>
+
+      <div class="side-section stats-grid">
+        <div class="stat-item">
+          <span class="stat-number" id="stat-alerts">0</span>
+          <span class="stat-name">Alerts Today</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-last-alert">—</span>
+          <span class="stat-name">Last Alert</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-last-ack">—</span>
+          <span class="stat-name">Last Ack</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-uptime">0h</span>
+          <span class="stat-name">Uptime</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main id="main-content">
+
+      <!-- TOP: Live Status Cards -->
+      <section class="cards-row" id="cards-row">
+        <div class="card card-temp" id="card-temp">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+          </div>
+          <div class="card-body">
+            <span class="card-label">Temperature</span>
+            <span class="card-value" id="val-temp">--</span>
+            <span class="card-unit">°C</span>
+          </div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-temp"></div></div>
+        </div>
+
+        <div class="card card-hum" id="card-hum">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          </div>
+          <div class="card-body">
+            <span class="card-label">Humidity</span>
+            <span class="card-value" id="val-hum">--</span>
+            <span class="card-unit">%</span>
+          </div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-hum"></div></div>
+        </div>
+
+        <div class="card card-risk" id="card-risk">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="card-body">
+            <span class="card-label">Risk Score</span>
+            <span class="card-value" id="val-risk">--</span>
+            <span class="card-unit">/ 100</span>
+          </div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-risk"></div></div>
+        </div>
+
+        <div class="card card-prox" id="card-prox">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div class="card-body">
+            <span class="card-label">Proximity</span>
+            <span class="card-value" id="val-prox">--</span>
+            <span class="card-unit">sensors</span>
+          </div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-prox"></div></div>
+        </div>
+      </section>
+
+      <!-- MIDDLE: Charts -->
+      <section class="charts-section">
+        <div class="chart-card">
+          <h3>Temperature Trend</h3>
+          <canvas id="chartTemp"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Humidity Trend</h3>
+          <canvas id="chartHum"></canvas>
+        </div>
+        <div class="chart-card chart-card-wide">
+          <h3>Risk Score Trend</h3>
+          <canvas id="chartRisk"></canvas>
+        </div>
+      </section>
+
+      <!-- BOTTOM: Event Log -->
+      <section class="log-section">
+        <h3>📋 Event Log</h3>
+        <div class="log-table-wrap">
+          <table id="event-log-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Time</th>
+                <th>Temp</th>
+                <th>Humidity</th>
+                <th>Risk</th>
+                <th>Proximity</th>
+                <th>State</th>
+                <th>Ack</th>
+              </tr>
+            </thead>
+            <tbody id="event-log-body">
+              <!-- JS fills this -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════ ALERT OVERLAY ═══════════ -->
+  <div class="alert-overlay" id="alert-overlay">
+    <div class="alert-box">
+      <div class="alert-icon">⚠️</div>
+      <h2>CRITICAL ALERT</h2>
+      <p id="alert-msg">Risk score exceeded critical threshold!</p>
+      <button id="alert-dismiss" onclick="dismissAlert()">Dismiss</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
